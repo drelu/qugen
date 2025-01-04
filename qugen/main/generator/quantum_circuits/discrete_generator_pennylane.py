@@ -79,8 +79,9 @@ def discrete_copula_circuit_JAX(n_qubits, n_registers, circuit_depth):
         return qml.sample()
     # Only the circuit with one copula block is implemented for now.
     @partial(jax.jit, static_argnames=["n_shots"])
+    #@jax.jit
     def qnode_with_variable_random_key(key, weights, n_shots):
-        dev = qml.device("default.qubit.jax", prng_key=key, wires=n_qubits, shots=n_shots)
+        dev = qml.device("default.qubit", wires=n_qubits, shots=n_shots)
         qnode = qml.QNode(qnode_fn, dev, diff_method=None, interface="jax")
         return qnode(weights)
 
@@ -91,7 +92,7 @@ def discrete_copula_circuit_JAX(n_qubits, n_registers, circuit_depth):
     # qnode and runs it, meaning that no QNode object actually exists at this point in the code. Both the dummy_qnode and
     # the qnode_with_variable_random_key_and_shots function actually use the same qnode_fn though (which specifies the
     # circuit)
-    dummy_device = qml.device("default.qubit.jax", prng_key=jax.random.PRNGKey(1), wires=n_qubits, shots=1)
+    dummy_device = qml.device("default.qubit",  wires=n_qubits, shots=1)
     dummy_qnode = qml.QNode(qnode_fn, dummy_device, diff_method=None, interface="jax")
     # Need to pass in a dummy array jnp.zeros((1,)) to get the number of trainable parameters since in some cases this
     # number actually depends on the input array (because it is inferred from it), e.g. in templates like
